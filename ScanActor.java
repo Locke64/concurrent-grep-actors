@@ -7,6 +7,7 @@ import Found.java;
 import java.util.regex.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 
 public class ScanActor extends UntypedActor{
@@ -36,7 +37,7 @@ public class ScanActor extends UntypedActor{
   }
 
   private static Found searchFile() {
-    BufferedREader reader = null;
+    BufferedReader reader = null;
     LinkedList<String> matchingLines = new LinkedList<String>();
     int lineNumber = 0;
     String line = null;
@@ -66,5 +67,25 @@ public class ScanActor extends UntypedActor{
 
   private static Found searchInput() {
     //TODO write this method
+    BufferedReader reader = null;
+    LinkedList<String> matchingLines = new LinkedList<String>();
+    Matcher lineMatcher = null;
+    String line = null;
+    Found regExResults;
+
+    try {
+      reader = new BufferedReader(new InputStreamReader(System.in));
+      System.out.printf("Please enter a string:");
+      line = reader.readLine();
+      lineMatcher = regExpression.matcher(line);
+      if (lineMatcher.find()) {
+        matchingLines.add(line);
+      }
+    }catch (IOException e) {
+      //TODO exception handling
+    }
+
+    regExResults = new Found("-", matchingLines);
+    return regExResults; 
   }
 }
