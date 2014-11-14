@@ -12,12 +12,33 @@ public class CGrep {
 			 if ( args.length == 2 && !args[1].endsWith(".txt") )
 				 Finder.find(Pattern.compile(args[0]), args[1]);
 			 else {
-				 Collection<File> files = new ArrayList<File>();
+				 Collection<String> files = new ArrayList<String>();
 				 for( int a = 1; a < args.length; a++ )
-					 files.add(new File(args[a]));
+					 files.add(args[a]);
 				 Finder.find(Pattern.compile(args[0]), files);
 			 }
 		}
-		
-	}  
+	}
+	
+	// find the given pattern in the given input by creating an executing a callable Finder
+	public static void find( Pattern pattern, String input ) {
+		ActorRef collection = actorOf( CollectionActor.class );
+		collection.start();
+		collection.tell( new FileCount( 1 ) );
+		ActorRef scanner = actorOf( ScanActor.class );
+		scanner.start();
+		scanner.tell( new Configure( null, collection ) );
+	}
+
+	// find the given pattern in the given files by creating and executing a callable Finder for each file
+	public static void find( Pattern pattern, Collection<String> files ) {
+		ActorRef collection = actorOf( CollectionActor.class );
+		collection.start();
+		collection.tell( new FileCount( 1 ) );
+		for( String f : files ) {
+			ActorRef scanner = actorOf( ScanActor.class );
+			scanner.start();
+			scanner.tell( new Configure( f, collection ) );
+		}
+	}
 }
