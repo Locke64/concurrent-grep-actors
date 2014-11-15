@@ -15,15 +15,30 @@ public class ScanActor extends UntypedActor{
   private Configure assignment;
   private final Pattern regExpression;
 
+  /*
+   * Constructor for the ScanActor
+   *
+   * @param expression      the regular expression used in evaluating the file
+   */
+
   public ScanActor(Pattern expression) {
     regExpression = expression;
   }
  
+  /*
+   * Method that waits to receive a message from another Actor.
+   *
+   * @param message    the message Object sent from another Actor
+   */
+
   public void onReceive(Object message) throws Exception {
     if (message instanceof Configure) {
       log.info("Received Configure  message: {}", message);
       assignment = message;
       Found results = null;
+
+      // if a filename is given, compare the regular expression against the contents
+      // otherwise, compare the regular expression against the line from standard input
 
       if (!assignment.getFilename().equals(null)) {
         results = searchFile();
@@ -31,10 +46,18 @@ public class ScanActor extends UntypedActor{
         results = searchInput();
       }
 
-      getSender().tell(message, getSelf());
+      assignment.getReference().tell(results);
     } else
       unhandled(message);
   }
+
+  /*
+   * Static method that performs the scanning of a file. Any line
+   * that matches the regular expression is added to a list of
+   * matching lines.
+   *
+   * @return regExResults     a Found object containing the results of scanning the file
+   */
 
   private static Found searchFile() {
     BufferedReader reader = null;
@@ -56,14 +79,21 @@ public class ScanActor extends UntypedActor{
         line = reader.readLine();
       }
     }catch (FileNotFoundException e) {
-      //TODO exception handling
+      System.err.println(e.getMessage());
     }catch (IOExcepion e) {
-      //TODO exeption handling
+      System.err.println(e.getMessage());
     }
 
     regExResults = new Found(assignment.getFilename(), matchingLines);
     return regExResults;
   }
+
+  /*
+   * Method used to scan a line sent in from Standard Input. If the line matches,
+   * it is added to a list of matching lines.
+   *
+   * @return  regExResults     the Found object containing the results of scanning Standard Input
+   */
 
   private static Found searchInput() {
     //TODO write this method
@@ -82,7 +112,7 @@ public class ScanActor extends UntypedActor{
         matchingLines.add(line);
       }
     }catch (IOException e) {
-      //TODO exception handling
+      System.err.println(e.getMessage());
     }
 
     regExResults = new Found("-", matchingLines);
