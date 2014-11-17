@@ -1,4 +1,5 @@
-import akka.actor.ActorRef;
+import static akka.actor.Actors.*;
+import akka.actor.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,22 +12,26 @@ public class CGrep {
 			System.out.println("Please input the correct format.");
 		else {
 			 if ( args.length == 2 && !args[1].endsWith(".txt") )
-				 Finder.find(Pattern.compile(args[0]), args[1]);
+				 find(Pattern.compile(args[0]), args[1]);
 			 else {
 				 Collection<String> files = new ArrayList<String>();
 				 for( int a = 1; a < args.length; a++ )
 					 files.add(args[a]);
-				 Finder.find(Pattern.compile(args[0]), files);
+				 find(Pattern.compile(args[0]), files);
 			 }
 		}
 	}
 	
 	// find the given pattern in the given input by creating an executing a callable Finder
-	public static void find( Pattern pattern, String input ) {
+	public static void find( final Pattern pattern, String input ) {
 		ActorRef collection = actorOf( CollectionActor.class );
 		collection.start();
 		collection.tell( new FileCount( 1 ) );
-		ActorRef scanner = actorOf( ScanActor.class );
+		ActorRef scanner = actorOf( new UntypedActorFactory() {
+				public UntypedActor create() {
+					return new ScanActor( pattern );
+				}
+			} );
 		scanner.start();
 		scanner.tell( new Configure( null, collection ) );
 	}

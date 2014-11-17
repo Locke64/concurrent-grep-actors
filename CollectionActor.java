@@ -1,14 +1,14 @@
 import akka.actor.UntypedActor;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
 
 public class CollectionActor extends UntypedActor {
-  LoggingAdapter log = Logging.getLogger(getContext().system(), this);
  
   public void onReceive(Object message) throws Exception {
-    if (message instanceof String) {
-      log.info("Received String message: {}", message);
-      getSender().tell(message, getSelf());
+    if( message instanceof FileCount ) {
+	  //TODO
+    } else if( message instanceof Found ) {
+      System.out.println(String.format("Received String message: %s", message));
+      //getSender().tell(message, getSelf());
+	  //TODO
     } else
       unhandled(message);
   }

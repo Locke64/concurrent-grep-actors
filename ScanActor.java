@@ -1,17 +1,13 @@
 import akka.actor.UntypedActor;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
 import java.util.LinkedList;
-import Configure.java;
-import Found.java;
 import java.util.regex.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class ScanActor extends UntypedActor{
-  LoggingAdapter log = Logging.getLogger(getContext().system(), this);
   private Configure assignment;
   private final Pattern regExpression;
 
@@ -33,14 +29,14 @@ public class ScanActor extends UntypedActor{
 
   public void onReceive(Object message) throws Exception {
     if (message instanceof Configure) {
-      log.info("Received Configure  message: {}", message);
-      assignment = message;
+      assignment = (Configure) message;
+      System.out.println(String.format("Received Configure  message: %s", assignment));
       Found results = null;
 
       // if a filename is given, compare the regular expression against the contents
       // otherwise, compare the regular expression against the line from standard input
 
-      if (!assignment.getFilename().equals(null)) {
+      if (assignment.getFilename() != null) {
         results = searchFile();
       } else {
         results = searchInput();
@@ -52,14 +48,14 @@ public class ScanActor extends UntypedActor{
   }
 
   /*
-   * Static method that performs the scanning of a file. Any line
+   * Method that performs the scanning of a file. Any line
    * that matches the regular expression is added to a list of
    * matching lines.
    *
    * @return regExResults     a Found object containing the results of scanning the file
    */
 
-  private static Found searchFile() {
+  private Found searchFile() {
     BufferedReader reader = null;
     LinkedList<String> matchingLines = new LinkedList<String>();
     int lineNumber = 0;
@@ -80,7 +76,7 @@ public class ScanActor extends UntypedActor{
       }
     }catch (FileNotFoundException e) {
       System.err.println(e.getMessage());
-    }catch (IOExcepion e) {
+    }catch (IOException e) {
       System.err.println(e.getMessage());
     }
 
@@ -95,7 +91,7 @@ public class ScanActor extends UntypedActor{
    * @return  regExResults     the Found object containing the results of scanning Standard Input
    */
 
-  private static Found searchInput() {
+  private Found searchInput() {
     //TODO write this method
     BufferedReader reader = null;
     LinkedList<String> matchingLines = new LinkedList<String>();
