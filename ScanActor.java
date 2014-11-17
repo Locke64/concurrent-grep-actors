@@ -68,7 +68,7 @@ public class ScanActor extends UntypedActor{
     Found regExResults;
 
     try {
-      reader = new BufferedReader(new FileReader(assignment.getFilename());
+      reader = new BufferedReader(new FileReader(assignment.getFilename()));
       line = reader.readLine();
       while(line != null) {
         lineNumber++;
