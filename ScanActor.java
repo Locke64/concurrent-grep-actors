@@ -30,7 +30,6 @@ public class ScanActor extends UntypedActor{
   public void onReceive(Object message) throws Exception {
     if (message instanceof Configure) {
       assignment = (Configure) message;
-      System.out.println(String.format("Received Configure  message: %s", assignment));
       Found results = null;
 
       // if a filename is given, compare the regular expression against the contents
