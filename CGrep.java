@@ -8,22 +8,20 @@ import java.util.regex.Pattern;
 public class CGrep {
 	public static void main( String[] args ) {
 		
-		if ( args.length < 2 )
-			System.out.println("Please input the correct format.");
+		if( args.length < 1 )
+			System.out.println( "Usage: java CGrep pattern [file...]" );
+		else if( args.length == 1 )
+			find(Pattern.compile(args[0]));
 		else {
-			 if ( args.length == 2 && !args[1].endsWith(".txt") )
-				 find(Pattern.compile(args[0]), args[1]);
-			 else {
-				 Collection<String> files = new ArrayList<String>();
-				 for( int a = 1; a < args.length; a++ )
-					 files.add(args[a]);
-				 find(Pattern.compile(args[0]), files);
-			 }
+			Collection<String> files = new ArrayList<String>();
+			for( int a = 1; a < args.length; a++ )
+				files.add(args[a]);
+			find(Pattern.compile(args[0]), files);
 		}
 	}
 	
 	// find the given pattern in the given input by creating an executing a callable Finder
-	public static void find( final Pattern pattern, String input ) {
+	public static void find( final Pattern pattern ) {
 		ActorRef collection = actorOf( CollectionActor.class );
 		collection.start();
 		collection.tell( new FileCount( 1 ) );
@@ -34,17 +32,23 @@ public class CGrep {
 			} );
 		scanner.start();
 		scanner.tell( new Configure( null, collection ) );
+		scanner.tell( poisonPill() );
 	}
 
 	// find the given pattern in the given files by creating and executing a callable Finder for each file
-	public static void find( Pattern pattern, Collection<String> files ) {
+	public static void find( final Pattern pattern, Collection<String> files ) {
 		ActorRef collection = actorOf( CollectionActor.class );
 		collection.start();
-		collection.tell( new FileCount( 1 ) );
+		collection.tell( new FileCount( files.size() ) );
 		for( String f : files ) {
-			ActorRef scanner = actorOf( ScanActor.class );
+		ActorRef scanner = actorOf( new UntypedActorFactory() {
+				public UntypedActor create() {
+					return new ScanActor( pattern );
+				}
+			} );
 			scanner.start();
 			scanner.tell( new Configure( f, collection ) );
+			scanner.tell( poisonPill() );
 		}
 	}
 }
